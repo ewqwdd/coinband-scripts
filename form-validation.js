@@ -256,8 +256,7 @@ const countries = [
   { name: "Zimbabwe", code: "ZW", phone: 263 },
 ];
 
-window.addEventListener("load", () => {
-  const initForm = (form_) => {
+const initForm = (form_) => {
     (select_box = form_.querySelector(".options")),
       (search_box = form_.querySelector(".search-box")),
       (input_box = form_.querySelector('input[type="tel"]')),
@@ -503,4 +502,3 @@ window.addEventListener("load", () => {
 
   const forms = document.querySelectorAll("form");
   forms.forEach((elem) => initForm(elem));
-});
