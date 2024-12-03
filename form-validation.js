@@ -1,3 +1,4 @@
+
 const urlPattern = /^(https?:\/\/)?([a-zA-Z0-9_-]+\.)+[a-zA-Z]{2,6}(\/[a-zA-Z0-9#?&%=_\.\-]*)*\/?$/;
 // 253 countries
 const countries = [
@@ -255,54 +256,53 @@ const countries = [
   { name: "Zimbabwe", code: "ZW", phone: 263 },
 ];
 
-const phonePromise = fetch("https://api.country.is/").then((res) => res.json());
-
 const initForm = (form_) => {
-  (select_box = form_.querySelector(".options")),
-    (search_box = form_.querySelector(".search-box")),
-    (input_box = form_.querySelector('input[type="tel"]')),
-    (selected_option = form_.querySelector(".selected-option div"));
+    (select_box = form_.querySelector(".options")),
+      (search_box = form_.querySelector(".search-box")),
+      (input_box = form_.querySelector('input[type="tel"]')),
+      (selected_option = form_.querySelector(".selected-option div"));
 
-  const initPhone = (select_box, search_box, input_box, selected_option) => {
-    let options = null;
-    let prev;
+    const initPhone = (select_box, search_box, input_box, selected_option) => {
+      let options = null;
+      let prev;
 
-    phonePromise
-      .then((data) => {
-        const val = countries.find((elem) => elem.code === data.country);
-        if (val) {
-          setIcon(val);
-          input_box.value = "+" + val.phone;
-          prev = "+" + val.phone;
-        }
-      })
-      .catch(() => {
-        const country = navigator.language.slice(-2).toUpperCase();
-        const val = countries.find((elem) => elem.code === country);
-        if (val) {
-          setIcon(val);
-          input_box.value = "+" + val.phone;
-          prev = "+" + val.phone;
-        }
+      fetch("https://api.country.is/")
+        .then((res) => res.json())
+        .then((data) => {
+          const val = countries.find((elem) => elem.code === data.country);
+          if (val) {
+            setIcon(val);
+            input_box.value = "+" + val.phone;
+            prev = "+" + val.phone;
+          }
+        })
+        .catch((err) => {
+          const country = navigator.language.slice(-2).toUpperCase();
+          const val = countries.find((elem) => elem.code === country);
+          if (val) {
+            setIcon(val);
+            input_box.value = "+" + val.phone;
+            prev = "+" + val.phone;
+          }
+        });
+
+      select_box.addEventListener("click", (e) => {
+        e.stopPropagation();
+      });
+      selected_option.addEventListener("click", (e) => {
+        e.stopPropagation();
+      });
+      window.addEventListener("click", (e) => {
+        select_box.classList.remove("active");
+        selected_option.classList.remove("active");
+        const opts = $(".options");
+        opts.slideUp();
+        search_box.value = "";
+        select_box.querySelectorAll(".hide").forEach((el) => el.classList.remove("hide"));
       });
 
-    select_box.addEventListener("click", (e) => {
-      e.stopPropagation();
-    });
-    selected_option.addEventListener("click", (e) => {
-      e.stopPropagation();
-    });
-    window.addEventListener("click", (e) => {
-      select_box.classList.remove("active");
-      selected_option.classList.remove("active");
-      const opts = $(".options");
-      opts.slideUp();
-      search_box.value = "";
-      select_box.querySelectorAll(".hide").forEach((el) => el.classList.remove("hide"));
-    });
-
-    for (country of countries) {
-      const option = `
+      for (country of countries) {
+        const option = `
     <li class="option">
         <div>
             <img class="flag-icon" src="https://flagsapi.com/${country.code}/flat/64.png">
@@ -311,185 +311,194 @@ const initForm = (form_) => {
         <strong>+${country.phone}</strong>
     </li> `;
 
-      select_box.querySelector("ol").insertAdjacentHTML("beforeend", option);
-      options = form_.querySelectorAll(".option");
-    }
+        select_box.querySelector("ol").insertAdjacentHTML("beforeend", option);
+        options = form_.querySelectorAll(".option");
+      }
 
-    function selectOption() {
-      const icon = this.querySelector(".flag-icon").cloneNode(true),
-        phone_code = this.querySelector("strong").cloneNode(true);
+      function selectOption() {
+        const icon = this.querySelector(".flag-icon").cloneNode(true),
+          phone_code = this.querySelector("strong").cloneNode(true);
 
-      selected_option.innerHTML = "";
-      selected_option.append(icon);
-      const arrow = document.createElement("span");
-      arrow.innerHTML = `<svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+        selected_option.innerHTML = "";
+        selected_option.append(icon);
+        const arrow = document.createElement("span");
+        arrow.innerHTML = `<svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M12.0884 16.5L15.5525 10.5H8.62428L12.0884 16.5Z" fill="#BAFF2A"/>
                 </svg>`;
-      selected_option.append(arrow);
-      if (prev) {
-        input_box.value = phone_code.innerText + input_box.value.replace(prev, "").replace("+", "");
+        selected_option.append(arrow);
+        if (prev) {
+          input_box.value = phone_code.innerText + input_box.value.replace(prev, "").replace("+", "");
+        }
+
+        prev = phone_code.innerText;
+        select_box.classList.remove("active");
+        selected_option.classList.remove("active");
+        const opts = $(".options");
+        opts.slideUp();
+
+        search_box.value = "";
+        select_box.querySelectorAll(".hide").forEach((el) => el.classList.remove("hide"));
       }
 
-      prev = phone_code.innerText;
-      select_box.classList.remove("active");
-      selected_option.classList.remove("active");
-      const opts = $(".options");
-      opts.slideUp();
-
-      search_box.value = "";
-      select_box.querySelectorAll(".hide").forEach((el) => el.classList.remove("hide"));
-    }
-
-    function searchCountry() {
-      let search_query = search_box.value.toLowerCase();
-      for (option of options) {
-        let is_matched = option.querySelector(".country-name").innerText.toLowerCase().includes(search_query);
-        option.classList.toggle("hide", !is_matched);
+      function searchCountry() {
+        let search_query = search_box.value.toLowerCase();
+        for (option of options) {
+          let is_matched = option
+            .querySelector(".country-name")
+            .innerText.toLowerCase()
+            .includes(search_query);
+          option.classList.toggle("hide", !is_matched);
+        }
       }
-    }
 
-    selected_option.addEventListener("click", () => {
-      const opts = $(".options");
-      opts.slideToggle();
-      select_box.classList.toggle("active");
-      selected_option.classList.toggle("active");
-    });
+      selected_option.addEventListener("click", () => {
+        const opts = $(".options");
+        opts.slideToggle();
+        select_box.classList.toggle("active");
+        selected_option.classList.toggle("active");
+      });
 
-    const setIcon = (exactMatch) => {
-      selected_option.innerHTML = "";
+      const setIcon = (exactMatch) => {
+        selected_option.innerHTML = "";
 
-      // Добавляем иконку флага
-      const icon = document.createElement("img");
-      icon.className = "flag-icon";
-      icon.setAttribute("src", `https://flagsapi.com/${exactMatch.code.toUpperCase()}/flat/64.png`);
-      selected_option.append(icon);
-      const arrow = document.createElement("span");
-      arrow.innerHTML = `<svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+        // Добавляем иконку флага
+        const icon = document.createElement("img");
+        icon.className = "flag-icon";
+        icon.setAttribute("src", `https://flagsapi.com/${exactMatch.code.toUpperCase()}/flat/64.png`);
+        selected_option.append(icon);
+        const arrow = document.createElement("span");
+        arrow.innerHTML = `<svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M12.0884 16.5L15.5525 10.5H8.62428L12.0884 16.5Z" fill="#BAFF2A"/>
             </svg>`;
-      selected_option.append(arrow);
+        selected_option.append(arrow);
+      };
+
+      options.forEach((option) => option.addEventListener("click", selectOption));
+      search_box.addEventListener("input", searchCountry);
+
+      const inputChange = (e) => {
+        const regex = /^\+\d*$/; // Разрешаем только "+" в начале и цифры после
+
+        if (input_box.value === "") {
+          input_box.value = "+";
+        }
+
+        if (!regex.test(input_box.value)) {
+          e.preventDefault(); // Останавливаем ввод недопустимого символа
+          input_box.value = input_box.value.replace(/[^\d+]/g, ""); // Удаляем недопустимые символы
+        }
+
+        let inputValue = input_box.value;
+        let filteredCountries = countries.filter((country) => {
+          return inputValue.startsWith(`+${country.phone.toString()}`);
+        });
+
+        // Сортируем по длине телефонного кода, чтобы найти самое точное совпадение
+        filteredCountries.sort((a, b) => b.phone.toString().length - a.phone.toString().length);
+
+        if (filteredCountries.length > 0) {
+          const exactMatch = filteredCountries[0];
+          // Найденная страна
+          setIcon(exactMatch);
+          prev = exactMatch.phone;
+        } else {
+          setIcon({ code: "xx" });
+        }
+      };
+
+      // Добавляем обработку события на keypress, чтобы запретить ввод букв
+      input_box.addEventListener("keypress", (e) => {
+        if (!/[0-9+]/.test(e.key)) {
+          e.preventDefault(); // Запрещаем ввод любых символов, кроме цифр и "+"
+        }
+      });
+
+      input_box.addEventListener("input", inputChange);
+      input_box.addEventListener("change", inputChange);
     };
 
-    options.forEach((option) => option.addEventListener("click", selectOption));
-    search_box.addEventListener("input", searchCountry);
+    if (select_box && search_box && input_box && select_box) {
+      initPhone(select_box, search_box, input_box, selected_option);
 
-    const countryMap = new Map(countries.map((country) => [country.phone.toString(), country]));
-
-    const inputChange = (e) => {
-      const regex = /^\+\d*$/;
-      if (!regex.test(input_box.value)) {
-        input_box.value = input_box.value.replace(/[^\d+]/g, "");
-      }
-
-      const inputValue = input_box.value.slice(1); // Убираем "+"
-      const match = countryMap.get(inputValue);
-
-      if (match) {
-        setIcon(match);
-        prev = match.phone;
-      } else {
-        setIcon({ code: "xx" }); // Пустая страна
-      }
-    };
-
-    // Добавляем обработку события на keypress, чтобы запретить ввод букв
-    input_box.addEventListener("keypress", (e) => {
-      if (!/[0-9+]/.test(e.key)) {
-        e.preventDefault(); // Запрещаем ввод любых символов, кроме цифр и "+"
-      }
-    });
-
-    input_box.addEventListener("input", inputChange);
-    input_box.addEventListener("change", inputChange);
-  };
-
-  if (select_box && search_box && input_box && select_box) {
-    initPhone(select_box, search_box, input_box, selected_option);
-
-    input_box.addEventListener("input", () => {
-      phoneError.style.display = "none";
-    });
-    input_box.addEventListener("change", () => {
-      phoneError.style.display = "none";
-    });
-  }
-
-  const form = $(form_);
-  const phoneError = form_.querySelector(".phone-error");
-
-  const requiredFields = form_.querySelectorAll('[data-required="true"]');
-
-  requiredFields.forEach((elem) => {
-    const input = elem.querySelector("input, textarea");
-    const error = elem.querySelector(".invalid-msg");
-    input?.addEventListener("input", () => {
-      error.style.display = "none";
-    });
-  });
-
-  const onValidation = () => {
-    let check = true;
-    let scrollTo;
-    const parsed = libphonenumber.isValidNumber(form_.querySelector('input[type="tel"]').value);
-    if (!parsed) {
-      phoneError.style.display = "flex";
-      check = false;
-      if (!Number.isInteger(scrollTo)) {
-        scrollTo = select_box?.offsetTop;
-      }
+      input_box.addEventListener("input", () => {
+        phoneError.style.display = "none";
+      });
+      input_box.addEventListener("change", () => {
+        phoneError.style.display = "none";
+      });
     }
+
+    const form = $(form_);
+    const phoneError = form_.querySelector(".phone-error");
+
+    const requiredFields = form_.querySelectorAll('[data-required="true"]');
+
     requiredFields.forEach((elem) => {
-      const input = elem.querySelector("input, textarea, select");
+      const input = elem.querySelector("input, textarea");
       const error = elem.querySelector(".invalid-msg");
-
-      if (
-        elem.hasAttribute("data-input-website") &&
-        input?.value?.length > 0 &&
-        !urlPattern.test(input.value)
-      ) {
-        error.style.display = "flex";
-        check = false;
-        if (!Number.isInteger(scrollTo)) {
-          scrollTo = elem?.offsetTop - 100;
-        }
-      }
-      if (elem.hasAttribute("data-input-website")) {
-        return;
-      }
-      if (!input.value || input.value?.length === 0) {
-        error.style.display = "flex";
-        check = false;
-        if (!Number.isInteger(scrollTo)) {
-          scrollTo = elem?.offsetTop;
-        }
-      }
+      input?.addEventListener("input", () => {
+        error.style.display = "none";
+      });
     });
-    if (Number.isInteger(scrollTo)) {
-      form_.scrollTo({
-        top: scrollTo,
-        behavior: "smooth",
+
+    const onValidation = () => {
+      let check = true;
+      let scrollTo;
+      const parsed = libphonenumber.isValidNumber(form_.querySelector('input[type="tel"]').value);
+      if (!parsed) {
+        phoneError.style.display = "flex";
+        check = false;
+        if (!Number.isInteger(scrollTo)) {
+          scrollTo = select_box?.offsetTop;
+        }
+      }
+      requiredFields.forEach((elem) => {
+        const input = elem.querySelector("input, textarea, select");
+        const error = elem.querySelector(".invalid-msg");
+
+				if (elem.hasAttribute('data-input-website') && input?.value?.length > 0 && !urlPattern.test(input.value)) {
+          error.style.display = "flex";
+          check = false;
+          if (!Number.isInteger(scrollTo)) {
+            scrollTo = elem?.offsetTop - 100;
+          }
+        }
+				if (elem.hasAttribute('data-input-website')) {
+					return
+				}
+        if (!input.value || input.value?.length === 0) {
+          error.style.display = "flex";
+          check = false;
+          if (!Number.isInteger(scrollTo)) {
+            scrollTo = elem?.offsetTop;
+          }
+        }
+
       });
-    }
-    return check;
+      if (Number.isInteger(scrollTo)) {
+        form_.scrollTo({
+          top: scrollTo,
+          behavior: "smooth",
+        });
+      }
+      return check;
+    };
+	
+    form.submit((event) => {
+      const valid = onValidation();
+			if (valid) {
+				window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: 'form_submit',
+          formName: form.attr('data-name') || 'unnamed_form' // используем имя формы или fallback
+        });
+      }
+      return valid;
+    });
   };
+	
+	const referrers = document.querySelectorAll('[name="referrer"]')
+	referrers.forEach(elem => {elem.value = window.location.origin + window.location.pathname})
 
-  form.submit((event) => {
-    const valid = onValidation();
-    if (valid) {
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({
-        event: "form_submit",
-        formName: form.attr("data-name") || "unnamed_form", // используем имя формы или fallback
-      });
-    }
-    return valid;
-  });
-};
-
-const referrers = document.querySelectorAll('[name="referrer"]');
-referrers.forEach((elem) => {
-  elem.value = window.location.origin + window.location.pathname;
-});
-
-const forms = document.querySelectorAll("form");
-forms.forEach((elem) => initForm(elem));
+  const forms = document.querySelectorAll("form");
+  forms.forEach((elem) => initForm(elem));
