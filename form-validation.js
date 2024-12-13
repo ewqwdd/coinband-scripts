@@ -495,7 +495,7 @@ const initForm = (form_) => {
     return valid;
   });
 };
-const fn = () => {
+const initForms_ = () => {
   const referrers = document.querySelectorAll('[name="referrer"]');
   referrers.forEach((elem) => {
     elem.value = window.location.origin + window.location.pathname;
@@ -505,4 +505,4 @@ const fn = () => {
   forms.forEach((elem) => initForm(elem));
 };
 
-fn();
+initForms_();
