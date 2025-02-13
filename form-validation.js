@@ -452,6 +452,15 @@ const initForm = (form_) => {
       const input = elem.querySelector("input, textarea, select");
       const error = elem.querySelector(".invalid-msg");
 
+      if (elem.hasAttribute("data-input-max") && input?.length > Number(elem.getAttribute("data-input-max"))) {
+        error.style.display = "flex";
+        error.textContent = `Max length is ${elem.getAttribute("data-input-max")}`;
+        check = false;
+        if (!Number.isInteger(scrollTo)) {
+          scrollTo = elem?.offsetTop;
+        }
+      }
+
       if (
         elem.hasAttribute("data-input-website") &&
         input?.value?.length > 0 &&
